@@ -4,9 +4,9 @@ import { WindowsAutoUpdater, UpdateCancelledError } from '@main/download/windows
 import { signatureCodeOf, sourceOfUrl, windowsInstallerName } from '@main/download/windowsUpdateFeed';
 import { fetchGithubRelease, buildGithubReleaseOptions } from '@common/githubRelease';
 import { compareVersions } from '@main/download/updateVersion';
+// Fork patch (PATCHES.md #1): update source is this fork's releases, not upstream's.
+import { LOCAL_UPDATE_REPO as REPO } from '@main/local/localBuild';
 import type { IpcServices } from './types';
-
-const REPO = 'bit-admin/Yanhekt-AutoSlides';
 
 interface GithubRelease {
   tag_name: string;
