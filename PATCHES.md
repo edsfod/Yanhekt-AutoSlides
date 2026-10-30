@@ -47,10 +47,6 @@ git tag v<X.Y.Z>-local.1 && git push origin v<X.Y.Z>-local.1
 
 ## Known differences from the official build
 
-- **No bundled earlier-terms course index.** Official Release builds run `npm run index-bundle`
-  with the `INDEX_CLIENT_PASSPHRASE` secret. This fork has no such secret and does not run it.
-  The app can still fetch index updates at runtime from upstream's `index` pre-release
-  (`courseIndexUpdater.ts` reads `bit-admin/Yanhekt-AutoSlides`; deliberately left pointing at
-  upstream). Check that searching earlier terms works after installing.
+- **The local course index (earlier terms) is off.** Its files are sealed with a passphrase that official Release builds get from the `INDEX_CLIENT_PASSPHRASE` secret at build time (`clientKey.ts`). Without it `CourseIndexBundle` answers `no-key` and `courseIndexUpdater` refuses to update (`this build has no index key`), so neither the bundled data nor the runtime download from upstream's `index` pre-release can be read. The code lookups that fall back to the online Index API (`share.ruc.edu.kg`, signed-in users, campus network) still work. This fork does not extract the passphrase from the official app; get it from, or agree an alternative with, the maintainer.
 - **Unsigned installer.** Windows may show SmartScreen; there is no update signature.
 - **Electron version** is whatever upstream pins. The earlier local bump to 44 is not carried.
