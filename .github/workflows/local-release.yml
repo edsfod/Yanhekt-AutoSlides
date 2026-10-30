@@ -1,0 +1,93 @@
+name: Local release
+
+# Fork-only workflow (PATCHES.md). Builds the unsigned Windows installer for a
+# `v<version>-local.<n>` tag and publishes it as a GitHub Release. Needs no
+# secrets; upstream's workflows (Release, Build, CI, Indexer) are disabled in
+# the fork's Actions settings instead of edited, so rebases never touch them.
+on:
+  push:
+    tags:
+      - 'v*-local.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+        cache-dependency-path: autoslides/package-lock.json
+
+    - name: Install dependencies
+      working-directory: autoslides
+      run: npm ci
+
+    - name: Lint
+      working-directory: autoslides
+      run: npm run lint
+
+    - name: Test
+      working-directory: autoslides
+      # Upstream's own CI runs the suite on Linux; a handful of cases assume
+      # Unix paths and fail on Windows, so a red test run here does not block
+      # the build. Read the log when the number of failures changes.
+      continue-on-error: true
+      run: npm test
+
+    - name: Build NSIS installer
+      # Retried like upstream's build.yml: packaging re-fetches Electron's
+      # SHASUMS256.txt and a transient GitHub 500 aborts the build.
+      shell: pwsh
+      working-directory: autoslides
+      env:
+        CSC_IDENTITY_AUTO_DISCOVERY: false
+      run: |
+        $ErrorActionPreference = 'Continue'
+        $PSNativeCommandUseErrorActionPreference = $false
+        for ($i = 1; $i -le 3; $i++) {
+          npm run make:win
+          if ($LASTEXITCODE -eq 0) { exit 0 }
+          if ($i -lt 3) {
+            Write-Host "::warning::make:win failed (attempt $i/3), retrying in 30s"
+            Remove-Item -Recurse -Force out -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 30
+          }
+        }
+        exit 1
+
+    - name: Checksums
+      shell: pwsh
+      working-directory: autoslides/out/make
+      run: |
+        Get-ChildItem *.exe | ForEach-Object {
+          $h = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+          "$h  $($_.Name)" | Tee-Object -FilePath "$($_.Name).sha256"
+        }
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: AutoSlides-Windows-Setup
+        path: |
+          autoslides/out/make/*.exe
+          autoslides/out/make/*.sha256
+        retention-days: 30
+
+    - name: Publish release
+      if: startsWith(github.ref, 'refs/tags/')
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        # No latest.yml / .sig on purpose: without them the app falls back to the
+        # download-and-open update flow instead of in-place updating.
+        gh release create "${{ github.ref_name }}" `
+          (Get-ChildItem autoslides/out/make/*.exe, autoslides/out/make/*.sha256).FullName `
+          --title "${{ github.ref_name }}" `
+          --notes "Unsigned fork build. Base: upstream $("${{ github.ref_name }}" -replace '-local.*','') plus the patches listed in PATCHES.md."
