@@ -256,7 +256,8 @@
                   </span>
                   <span v-else-if="session.screen" class="ep-badge">{{ $t('lectures.screen') }}</span>
                   <span v-else-if="session.camera" class="ep-badge">{{ $t('lectures.camera') }}</span>
-                  <span v-if="!session.screen && !session.camera" class="ep-badge ep-badge--online">
+                  <span v-if="session.room" class="ep-badge">{{ $t('lectures.room') }}</span>
+                  <span v-if="!session.screen && !session.camera && !session.room" class="ep-badge ep-badge--online">
                     {{ $t('lectures.streamOnline') }}
                   </span>
                   <span v-if="session.audio" class="ep-badge" :title="$t('lectures.micAudioHint')">

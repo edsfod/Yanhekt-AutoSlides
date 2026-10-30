@@ -8,6 +8,7 @@ import { indexSessionIds } from '@main/platform/indexClient';
 import { cbizEnvelopeError, isCbizOk } from '@main/platform/cbizEnvelope';
 import type { ConfigService } from '@main/platform/configService';
 import type { YanhektCatalogSink } from '@main/platform/yanhektCatalog';
+import { resolveYanhektRoomUrl } from '@main/local/roomStreamFallback';
 const log = createLogger('PlatformApiClient');
 
 /** Parallel session reads when the list comes from the Index. */
@@ -80,6 +81,7 @@ interface SessionListApiResponse extends BaseApiResponse {
       duration: string;
       main: string;
       vga: string;
+      room?: string;
     }>;
   }>;
 }
@@ -94,6 +96,7 @@ interface VideoDetailApiResponse extends BaseApiResponse {
     id: number | string;
     main?: string;
     vga?: string;
+    room?: string;
     duration?: string | number;
     audio?: string;
   };
@@ -552,6 +555,7 @@ export class ApiClient {
       const videoData = video.videos && video.videos.length > 0 ? video.videos[0] : null;
       const mainUrl = videoData ? videoData.main : '';
       const vgaUrl = videoData ? videoData.vga : '';
+      const roomUrl = videoData ? resolveYanhektRoomUrl(videoData) : '';
 
       return {
         session_id: video.id,
@@ -564,6 +568,7 @@ export class ApiClient {
         ended_at: video.ended_at,
         main_url: mainUrl,
         vga_url: vgaUrl,
+        ...(roomUrl ? { room_url: roomUrl } : {}),
         id: realVideoId
       };
     });
@@ -625,6 +630,7 @@ export class ApiClient {
     const video = res.code === 0 || res.code === '0' ? res.data : null;
     if (!video?.main?.trim() && !video?.vga?.trim()) return null;
     const realVideoId = video.id != null ? String(video.id) : videoId;
+    const roomUrl = resolveYanhektRoomUrl(video);
     return {
       session_id: String(s.id),
       video_id: realVideoId,
@@ -636,6 +642,7 @@ export class ApiClient {
       ended_at: s.ended_at,
       main_url: video.main?.trim() || '',
       vga_url: video.vga?.trim() || '',
+      ...(roomUrl ? { room_url: roomUrl } : {}),
       id: realVideoId,
     };
   }
@@ -799,6 +806,7 @@ export class ApiClient {
 
     const v = video.data || { id: videoId };
     const courseId = String(s.course?.id ?? s.course_id);
+    const roomUrl = resolveYanhektRoomUrl(v);
     return {
       session: {
         id: videoId,
@@ -812,6 +820,7 @@ export class ApiClient {
         ended_at: s.ended_at,
         main_url: v.main?.trim() || '',
         vga_url: v.vga?.trim() || '',
+        ...(roomUrl ? { room_url: roomUrl } : {}),
       },
       course: {
         id: courseId,

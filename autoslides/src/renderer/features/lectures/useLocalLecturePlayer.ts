@@ -101,8 +101,9 @@ export function useLocalLecturePlayer() {
   const activeSingleFile = computed<LibraryFileRef | null>(() => {
     if (!session.value) return null
     if (streamMode.value === 'camera') return session.value.camera || null
+    if (streamMode.value === 'room') return session.value.room || null
     if (streamMode.value === 'screen') return session.value.screen || null
-    return session.value.screen || session.value.camera || null
+    return session.value.screen || session.value.camera || session.value.room || null
   })
 
   const bindScreenEl = (el: HTMLVideoElement | null) => {
@@ -583,8 +584,18 @@ export function useLocalLecturePlayer() {
       isLoading.value = false
       return
     }
-    const kind: 'screen' | 'camera' = streamMode.value === 'camera' ? 'camera' : 'screen'
-    const file = kind === 'camera' ? sess.camera : sess.screen
+    const kind: 'screen' | 'camera' | 'room' =
+      streamMode.value === 'camera'
+        ? 'camera'
+        : streamMode.value === 'room'
+          ? 'room'
+          : 'screen'
+    const file =
+      kind === 'camera'
+        ? sess.camera
+        : kind === 'room'
+          ? sess.room
+          : sess.screen
     clearVideo(video)
     if (file) {
       wireElement(video, file, 'single', seekTo)
@@ -609,7 +620,7 @@ export function useLocalLecturePlayer() {
     }
 
     const streams = await resolvePlaybackStreams(sess)
-    const url = kind === 'camera' ? streams.camera : streams.screen
+    const url = kind === 'camera' ? streams.camera : kind === 'screen' ? streams.screen : null
     if (!url) {
       if (!errorMessage.value) {
         errorMessage.value = 'Online stream is not available for this lecture.'
@@ -618,7 +629,7 @@ export function useLocalLecturePlayer() {
       await releaseProxyClient()
       return
     }
-    attachOnlineHls(video, url, kind, seekTo, autoplay, 'single')
+    attachOnlineHls(video, url, kind === 'camera' ? 'camera' : 'screen', seekTo, autoplay, 'single')
     applyAudio()
     applyRate()
     attachMicAudio(seekTo, autoplay)
@@ -650,7 +661,9 @@ export function useLocalLecturePlayer() {
       ? !sess.screen || !sess.camera
       : streamMode.value === 'camera'
         ? !sess.camera
-        : !sess.screen
+        : streamMode.value === 'room'
+          ? !sess.room
+          : !sess.screen
 
     // Resolve before the release decision below, which reads onlineMicUrl.
     if (!overrides.playbackDemo) {

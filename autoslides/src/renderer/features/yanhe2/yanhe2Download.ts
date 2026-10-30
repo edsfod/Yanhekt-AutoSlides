@@ -67,6 +67,7 @@ function showDownload(itemId?: string): void {
 function alreadyQueuedText(kinds: Yanhe2DownloadKind[]): string {
   if (kinds.length > 1) return t('sessions.allInDownloadQueue')
   if (kinds[0] === 'screen') return t('sessions.alreadyInDownloadQueueScreen')
+  if (kinds[0] === 'room') return t('sessions.alreadyInDownloadQueueRoom')
   if (kinds[0] === 'audio') return t('sessions.alreadyInDownloadQueueAudio')
   return t('sessions.alreadyInDownloadQueue')
 }
@@ -150,11 +151,26 @@ export async function downloadAllYanhe2Recordings(requests: Yanhe2DownloadReques
     addingAll.value = null
   }
 
-  const addedKey = kind === 'screen' ? 'addedToDownloadQueueScreen' : kind === 'audio' ? 'addedToDownloadQueueAudio' : 'addedToDownloadQueue'
+  const addedKey =
+    kind === 'screen'
+      ? 'addedToDownloadQueueScreen'
+      : kind === 'room'
+        ? 'addedToDownloadQueueRoom'
+        : kind === 'audio'
+          ? 'addedToDownloadQueueAudio'
+          : 'addedToDownloadQueue'
   if (added === 0) {
     if (stopped) notify(t(`yanhe2Playback.downloadRefused.${stopped}`))
     else if (queued === requests.length) {
-      notify(t(kind === 'screen' ? 'sessions.allInDownloadQueueScreen' : kind === 'audio' ? 'sessions.allInDownloadQueueAudio' : 'sessions.allInDownloadQueue'))
+      notify(t(
+        kind === 'screen'
+          ? 'sessions.allInDownloadQueueScreen'
+          : kind === 'room'
+            ? 'sessions.allInDownloadQueueRoom'
+            : kind === 'audio'
+              ? 'sessions.allInDownloadQueueAudio'
+              : 'sessions.allInDownloadQueue',
+      ))
     }
     else notify(t('yanhe2Curriculum.downloadsAllNone'))
   } else if (added < requests.length) {

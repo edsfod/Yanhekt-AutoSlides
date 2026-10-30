@@ -22,7 +22,7 @@ export async function showSession(input: CommandInput, apiClient: ApiClient, tok
       started_at: session.started_at || null,
       ended_at: session.ended_at || null,
       duration: session.duration || 0,
-      streams: { screen: !!session.vga_url, camera: !!session.main_url },
+      streams: { screen: !!session.vga_url, camera: !!session.main_url, room: !!session.room_url },
       mic: !!audioUrl,
     },
     course: {
@@ -34,7 +34,11 @@ export async function showSession(input: CommandInput, apiClient: ApiClient, tok
     },
   };
 
-  const streams = [data.session.streams.screen && 'screen', data.session.streams.camera && 'camera'].filter(Boolean);
+  const streams = [
+    data.session.streams.screen && 'screen',
+    data.session.streams.camera && 'camera',
+    data.session.streams.room && 'room',
+  ].filter(Boolean);
   // Ids differ in length (session 6 digits, course 5); keep the titles in one column.
   const idWidth = Math.max(data.session.id.length, data.course.id.length) + 2;
   const lines: [string, string][] = [
@@ -57,7 +61,7 @@ export async function showSession(input: CommandInput, apiClient: ApiClient, tok
 const run = (input: CommandInput, ctx: CliContext): Promise<CommandResult> => showSession(input, ctx.apiClient, ANONYMOUS);
 
 export const SESSION_DATA =
-  '{ session: { id, title, week, day, started_at, ended_at, duration (s), streams: { screen, camera }, mic }, course: { id, title, title_en, college, term } }';
+  '{ session: { id, title, week, day, started_at, ended_at, duration (s), streams: { screen, camera, room }, mic }, course: { id, title, title_en, college, term } }';
 
 export const sessionCommand: CliCommand = {
   summary: 'Show one session and its recordings (no sign-in)',

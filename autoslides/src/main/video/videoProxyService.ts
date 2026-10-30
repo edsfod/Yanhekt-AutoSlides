@@ -80,6 +80,7 @@ export interface RecordedSessionInput {
   duration?: string | number;
   main_url?: string;
   vga_url?: string;
+  room_url?: string;
   /** Unsigned SubAudio `.aac`, resolved by the caller via GET /v1/video. */
   audio_url?: string;
 }
@@ -267,6 +268,19 @@ export class VideoProxyService {
           name: "屏幕录制",
           url: proxyUrl,
           original_url: fixedVgaUrl
+        };
+      }
+
+      // Process classroom camera video (教室摄像头 / VideoRoom) if available
+      if (session.room_url) {
+        const fixedRoomUrl = this.fixUrlEscaping(session.room_url);
+        const proxyUrl = `http://localhost:${proxyPort}/recorded?originalUrl=${encodeURIComponent(fixedRoomUrl)}&loginToken=${encodeURIComponent(token)}`;
+
+        result.streams.room = {
+          type: "room",
+          name: "教室摄像头",
+          url: proxyUrl,
+          original_url: fixedRoomUrl
         };
       }
 

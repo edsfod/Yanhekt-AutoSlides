@@ -45,7 +45,7 @@ interface Row {
 }
 
 const ROW_SHAPE =
-  '{ item_id, session_id, course_id, course_title, session_title, kind: "screen"|"camera"|"audio", status: RowStatus, progress: 0-100, path: string|null, error?, added_at, completed_at: string|null, extraction: { state, progress, error? }|null }';
+  '{ item_id, session_id, course_id, course_title, session_title, kind: "screen"|"camera"|"room"|"audio", status: RowStatus, progress: 0-100, path: string|null, error?, added_at, completed_at: string|null, extraction: { state, progress, error? }|null }';
 
 function statusOf(update: Pick<CliDownloadUpdate, 'state' | 'error'>): Status {
   if (update.state === 'error') return update.error === CANCELLED ? 'cancelled' : 'failed';
@@ -55,6 +55,7 @@ function statusOf(update: Pick<CliDownloadUpdate, 'state' | 'error'>): Status {
 const EXTENSIONS: Record<CliQueueItem['kind'], string> = {
   screen: '.mp4',
   camera: '.mp4',
+  room: '.mp4',
   audio: '.aac',
 };
 

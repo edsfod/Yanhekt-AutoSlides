@@ -11,7 +11,7 @@
 // Every payload here is plain JSON (it crosses IPC).
 import type { SessionDownloadInfo } from './apiTypes';
 
-export type CliDownloadStream = 'screen' | 'camera';
+export type CliDownloadStream = 'screen' | 'camera' | 'room';
 
 /**
  * The rows the command line sees: the two streams and the mic stem. Yanhe 2.0

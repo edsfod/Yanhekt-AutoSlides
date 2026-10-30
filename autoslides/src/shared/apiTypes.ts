@@ -135,6 +135,7 @@ export interface SessionData {
   ended_at: string;
   main_url?: string;
   vga_url?: string;
+  room_url?: string;
 }
 
 /**

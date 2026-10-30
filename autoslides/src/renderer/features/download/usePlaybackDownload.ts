@@ -11,6 +11,7 @@ export interface UsePlaybackDownloadOptions {
   sessionId?: string
   isDualStreamSelected: Ref<boolean>
   isScreenRecordingSelected: Ref<boolean>
+  currentStreamType?: Ref<'camera' | 'screen' | 'room' | undefined>
 }
 
 export interface UsePlaybackDownloadReturn {
@@ -24,7 +25,7 @@ export interface UsePlaybackDownloadReturn {
 // selected stream, or both streams when "Both Streams" is active. Recorded mode
 // only; the session data is already in DataStore from when the tab was opened.
 export function usePlaybackDownload(options: UsePlaybackDownloadOptions): UsePlaybackDownloadReturn {
-  const { mode, course, session, sessionId, isDualStreamSelected, isScreenRecordingSelected } = options
+  const { mode, course, session, sessionId, isDualStreamSelected, isScreenRecordingSelected, currentStreamType } = options
   const { t } = useI18n()
 
   const canDownload = computed(() => mode === 'recorded')
@@ -37,9 +38,15 @@ export function usePlaybackDownload(options: UsePlaybackDownloadOptions): UsePla
     if (!resolvedSessionId) return
 
     const courseTitle = course.value?.title || t('sessions.unknownCourse')
-    const videoTypes: Array<'camera' | 'screen'> = isDualStreamSelected.value
+    const singleType: 'camera' | 'screen' | 'room' =
+      currentStreamType?.value === 'room'
+        ? 'room'
+        : isScreenRecordingSelected.value
+          ? 'screen'
+          : 'camera'
+    const videoTypes: Array<'camera' | 'screen' | 'room'> = isDualStreamSelected.value
       ? ['camera', 'screen']
-      : [isScreenRecordingSelected.value ? 'screen' : 'camera']
+      : [singleType]
 
     let firstAddedId: string | undefined
     for (const videoType of videoTypes) {
@@ -62,7 +69,9 @@ export function usePlaybackDownload(options: UsePlaybackDownloadOptions): UsePla
           ? t('sessions.allInDownloadQueue')
           : videoTypes[0] === 'screen'
             ? t('sessions.alreadyInDownloadQueueScreen')
-            : t('sessions.alreadyInDownloadQueue')
+            : videoTypes[0] === 'room'
+              ? t('sessions.alreadyInDownloadQueueRoom')
+              : t('sessions.alreadyInDownloadQueue')
       })
       return
     }

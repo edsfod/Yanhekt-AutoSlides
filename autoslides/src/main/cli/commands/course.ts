@@ -36,12 +36,12 @@ export function sessionRowJson(s: SessionData) {
     started_at: s.started_at || null,
     ended_at: s.ended_at || null,
     duration: s.duration || 0,
-    streams: { screen: !!s.vga_url, camera: !!s.main_url },
+    streams: { screen: !!s.vga_url, camera: !!s.main_url, room: !!s.room_url },
   };
 }
 
-const streamsText = (streams: { screen: boolean; camera: boolean }): string =>
-  [streams.screen && 'screen', streams.camera && 'camera'].filter(Boolean).join('+') || '-';
+const streamsText = (streams: { screen: boolean; camera: boolean; room?: boolean }): string =>
+  [streams.screen && 'screen', streams.camera && 'camera', streams.room && 'room'].filter(Boolean).join('+') || '-';
 
 export interface CourseDeps {
   apiClient: ApiClient;
@@ -107,7 +107,7 @@ async function run(input: CommandInput, ctx: CliContext): Promise<CommandResult>
 }
 
 export const COURSE_DATA =
-  '{ course: { id, title, title_en, professors, college, term }, sessions: [{ id, title, week, day, started_at, ended_at, duration (s), streams: { screen, camera } }] | null, note?: string';
+  '{ course: { id, title, title_en, professors, college, term }, sessions: [{ id, title, week, day, started_at, ended_at, duration (s), streams: { screen, camera, room } }] | null, note?: string';
 
 export const courseCommand: CliCommand = {
   summary: 'Show a course and list its sessions (the list needs sign-in)',

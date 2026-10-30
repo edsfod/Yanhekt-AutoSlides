@@ -101,9 +101,10 @@ export function useYanhe2Player(options: UseYanhe2PlayerOptions) {
   const mode = computed(() => playback.value?.mode ?? 'recorded')
 
   /** The single streams the selector offers. */
-  const streams = computed<Yanhe2PlaybackStream[]>(() =>
-    (playback.value?.streams ?? []).filter((s) => developerMode.value || s.type !== 'room'),
-  )
+  const streams = computed<Yanhe2PlaybackStream[]>(() => {
+    void developerMode.value
+    return playback.value?.streams ?? []
+  })
 
   const streamOf = (type: Yanhe2StreamType) => streams.value.find((s) => s.type === type) ?? null
 

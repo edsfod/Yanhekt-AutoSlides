@@ -58,12 +58,14 @@ export interface UseSessionPageReturn {
   addToQueue: (session: Session) => void
   downloadCamera: (session: Session) => void
   downloadScreen: (session: Session) => void
+  downloadRoom: (session: Session) => void
   downloadAudio: (session: Session) => Promise<void>
 
   // Batch actions
   addAllToQueue: () => void
   downloadAllCamera: () => void
   downloadAllScreen: () => void
+  downloadAllRoom: () => void
   downloadAllAudio: () => Promise<void>
 
   // Formatting utilities
@@ -293,6 +295,15 @@ export function useSessionPage(options: UseSessionPageOptions): UseSessionPageRe
     }
   }
 
+  const downloadRoom = (session: Session): void => {
+    const result = addSessionToDownload(session, 'room')
+    if (!result.added) {
+      notify(t('sessions.alreadyInDownloadQueueRoom'))
+    } else {
+      onSwitchToDownload(result.item.id)
+    }
+  }
+
   /**
    * Mic audio is resolved lazily, on click.
    *
@@ -361,6 +372,21 @@ export function useSessionPage(options: UseSessionPageOptions): UseSessionPageRe
       notify(t('sessions.addedToDownloadQueueScreen', { count: addedCount }))
     } else {
       notify(t('sessions.allInDownloadQueueScreen'))
+    }
+  }
+
+  const downloadAllRoom = (): void => {
+    let addedCount = 0
+    sessions.value.forEach(session => {
+      const result = addSessionToDownload(session, 'room')
+      if (result.added) addedCount++
+    })
+
+    if (addedCount > 0) {
+      onSwitchToDownload()
+      notify(t('sessions.addedToDownloadQueueRoom', { count: addedCount }))
+    } else {
+      notify(t('sessions.allInDownloadQueueRoom'))
     }
   }
 
@@ -469,12 +495,14 @@ export function useSessionPage(options: UseSessionPageOptions): UseSessionPageRe
     addToQueue,
     downloadCamera,
     downloadScreen,
+    downloadRoom,
     downloadAudio,
 
     // Batch actions
     addAllToQueue,
     downloadAllCamera,
     downloadAllScreen,
+    downloadAllRoom,
     downloadAllAudio,
 
     // Formatting utilities

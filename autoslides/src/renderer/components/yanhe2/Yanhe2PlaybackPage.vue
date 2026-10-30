@@ -679,17 +679,18 @@ const downloadSubtitles = () => {
 }
 
 // Downloading what is on screen, like the Recorded player: the stream shown,
-// or camera + screen under Both Streams. The room camera is not offered.
+// or camera + screen under Both Streams.
 const isRecording = computed(() => !problem.value && playback.value?.mode === 'recorded')
 const downloadKinds = computed<Yanhe2DownloadKind[]>(() => {
   if (isDualSelected.value) return ['camera', 'screen']
   const type = currentStream.value?.type
-  return type === 'camera' || type === 'screen' ? [type] : []
+  return type === 'camera' || type === 'screen' || type === 'room' ? [type] : []
 })
 const downloadTitle = computed(() => {
   if (isDualSelected.value) return t('playback.downloadBoth')
   const type = currentStream.value?.type
   if (type === 'screen') return t('sessions.downloadScreen')
+  if (type === 'room') return t('sessions.downloadRoom')
   if (type === 'camera') return t('sessions.downloadCamera')
   return t('yanhe2Playback.downloadRoomUnavailable')
 })

@@ -400,6 +400,19 @@
                     </svg>
                   </span>
                 </button>
+                <button
+                  v-if="session.room"
+                  type="button"
+                  class="dual-popover-option stream-hybrid-option"
+                  :class="{ active: streamMode === 'room' }"
+                  @click="pickStreamMode('room')"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M23 7l-7 5 7 5V7z"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2"/>
+                  </svg>
+                  <span>{{ $t('playback.streamRoom') }}</span>
+                </button>
               </div>
             </div>
 
@@ -777,7 +790,10 @@ const episodeLine = computed(() => {
 })
 
 const headerTitle = computed(() => `${episodeLine.value} — ${props.course.title}`)
-const hasStreamChoices = computed(() => canShowDual(props.session))
+const hasStreamChoices = computed(() =>
+  canShowDual(props.session)
+  || (Boolean(props.session.room) && Boolean(props.session.screen || props.session.camera || props.session.vgaUrl || props.session.mainUrl)),
+)
 const dualIsOnline = computed(() => isScreenOnline(props.session) || isCameraOnline(props.session))
 const screenIsOnline = computed(() => isScreenOnline(props.session))
 const cameraIsOnline = computed(() => isCameraOnline(props.session))
@@ -790,6 +806,7 @@ const { t } = useI18n()
 const streamModeTitle = computed(() => {
   if (streamMode.value === 'dual') return t('playback.bothStreams')
   if (streamMode.value === 'camera') return t('playback.streamCamera')
+  if (streamMode.value === 'room') return t('playback.streamRoom')
   return t('playback.streamScreen')
 })
 

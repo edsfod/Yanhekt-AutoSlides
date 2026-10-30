@@ -35,6 +35,7 @@ export interface LibrarySession {
   startedAt?: string | null
   screen?: LibraryFileRef
   camera?: LibraryFileRef
+  room?: LibraryFileRef
   /**
    * Local classroom mic stem (`.aac`). NOT a video: it never sources a poster,
    * never backs a `<video>` and never influences the stream mode — it only
@@ -88,7 +89,7 @@ export interface LibraryCourse {
   subtitleCount: number
 }
 
-export type LocalStreamMode = 'dual' | 'screen' | 'camera'
+export type LocalStreamMode = 'dual' | 'screen' | 'camera' | 'room'
 
 export interface LibraryPlayerTarget {
   courseId: string
@@ -163,6 +164,7 @@ export function defaultStreamMode(session: LibrarySession): LocalStreamMode {
   if (session.screen && session.camera) return 'dual'
   if (session.screen) return 'screen'
   if (session.camera) return 'camera'
+  if (session.room) return 'room'
   if (session.vgaUrl && session.mainUrl) return 'dual'
   if (session.vgaUrl) return 'screen'
   return 'camera'
@@ -211,7 +213,7 @@ export function isCameraOnline(session: LibrarySession): boolean {
 }
 
 export function sessionHasLocalVideo(session: LibrarySession): boolean {
-  return Boolean(session.screen || session.camera)
+  return Boolean(session.screen || session.camera || session.room)
 }
 
 export function canShowDual(session: LibrarySession): boolean {
@@ -244,6 +246,7 @@ export function buildLibraryCourses(
     sessionId: string
     screen?: LibraryFileRef
     camera?: LibraryFileRef
+    room?: LibraryFileRef
     audio?: LibraryFileRef
     subtitles?: LibraryFileRef
     fallbackTitle: string
@@ -280,7 +283,7 @@ export function buildLibraryCourses(
     const session = ensureSession(course, sessionId, sessionLabelFromItem(item))
 
     const type = item.videoType
-    if (type === 'screen' || type === 'camera' || type === 'audio') {
+    if (type === 'screen' || type === 'camera' || type === 'room' || type === 'audio') {
       const ref = toFileRef(item, type)
       const existing = session[type]
       session[type] = existing ? pickBetter(existing, ref) : ref
@@ -291,7 +294,7 @@ export function buildLibraryCourses(
       // exist — and via pickBetter it could shadow the real screen recording.
       const ref = toFileRef(item, 'audio')
       session.audio = session.audio ? pickBetter(session.audio, ref) : ref
-    } else if (!session.screen && !session.camera) {
+    } else if (!session.screen && !session.camera && !session.room) {
       // Recognised but missing type — treat as screen so it remains playable.
       session.screen = toFileRef(item, 'screen')
     }
@@ -326,7 +329,7 @@ export function buildLibraryCourses(
     const sessions: LibrarySession[] = []
 
     for (const sess of bucket.sessions.values()) {
-      if (!sess.screen && !sess.camera && !sess.audio && !sess.slideFolderPath) continue
+      if (!sess.screen && !sess.camera && !sess.room && !sess.audio && !sess.slideFolderPath) continue
 
       const metaSession = meta?.sessions.find((s) => String(s.session_id) === String(sess.sessionId))
       const episode = meta
@@ -342,13 +345,14 @@ export function buildLibraryCourses(
         startedAt: metaSession?.started_at,
         screen: sess.screen,
         camera: sess.camera,
+        room: sess.room,
         audio: sess.audio,
         subtitles: sess.subtitles,
         videoId: metaSession?.video_id,
         duration: metaSession?.duration,
         mainUrl: metaSession?.mainUrl,
         vgaUrl: metaSession?.vgaUrl,
-        posterSourcePath: sess.screen?.path || sess.camera?.path,
+        posterSourcePath: sess.screen?.path || sess.camera?.path || sess.room?.path,
         slideFolderPath: sess.slideFolderPath,
       }
       sessions.push(session)
@@ -363,6 +367,7 @@ export function buildLibraryCourses(
     for (const s of sessions) {
       if (s.screen) fileCount += 1
       if (s.camera) fileCount += 1
+      if (s.room) fileCount += 1
       // Mic stems are files on disk, so they count toward FILES. "Dual" stays
       // strictly about having both video angles — audio is not a third angle.
       if (s.audio) {
@@ -502,8 +507,8 @@ export function formatSessionDate(
 
 /** Total bytes of a session's files on disk. */
 export function sessionTotalBytes(session: LibrarySession): number {
-  return (session.screen?.size || 0) + (session.camera?.size || 0) + (session.audio?.size || 0)
-    + (session.subtitles?.size || 0)
+  return (session.screen?.size || 0) + (session.camera?.size || 0) + (session.room?.size || 0)
+    + (session.audio?.size || 0) + (session.subtitles?.size || 0)
 }
 
 /** Numbers behind the course page's About section — local files only, no API. */

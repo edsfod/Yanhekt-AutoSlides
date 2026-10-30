@@ -923,7 +923,8 @@ const { downloadCurrentStream } = usePlaybackDownload({
   session: sessionRef,
   sessionId: props.sessionId,
   isDualStreamSelected: videoPlayerComposable.isDualStreamSelected,
-  isScreenRecordingSelected: videoPlayerComposable.isScreenRecordingSelected
+  isScreenRecordingSelected: videoPlayerComposable.isScreenRecordingSelected,
+  currentStreamType: computed(() => videoPlayerComposable.currentStreamData.value?.type)
 })
 
 // Initialize performance optimization composable
@@ -962,15 +963,8 @@ const {
   visibleEmptyStreamTypes
 } = videoPlayerComposable
 
-// The classroom camera (Video2) is a developer-mode option. Both Streams stays
-// camera + screen; this only adds or removes the single-stream choice.
 const selectorStreams = computed(() => {
-  const streams = playbackData.value?.streams
-  if (!streams) return {}
-  if (props.mode !== 'live' || configStore.developerMode) return streams
-  return Object.fromEntries(
-    Object.entries(streams).filter(([, stream]) => stream.type !== 'room')
-  )
+  return playbackData.value?.streams ?? {}
 })
 
 const streamTypeLabel = (type: string) => {

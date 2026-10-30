@@ -181,6 +181,7 @@ const { t } = useI18n()
 const videoTypeLabel = (type?: LectureVideoType): string => {
   if (type === 'screen') return t('lectures.screen')
   if (type === 'camera') return t('lectures.camera')
+  if (type === 'room') return t('lectures.room')
   if (type === 'audio') return t('lectures.micAudio')
   return ''
 }

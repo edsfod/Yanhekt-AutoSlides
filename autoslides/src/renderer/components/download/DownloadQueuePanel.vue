@@ -187,6 +187,7 @@
         >
           <option value="camera">{{ $t('downloads.bySession.camera') }}</option>
           <option value="screen">{{ $t('downloads.bySession.screen') }}</option>
+          <option value="room">{{ $t('downloads.bySession.room') }}</option>
           <option value="audio">{{ $t('downloads.bySession.audio') }}</option>
         </select>
         <button

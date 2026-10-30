@@ -25,7 +25,7 @@ import {
  * video: callers that pick a poster source, decide a stream mode or set a
  * `<video>.src` must exclude it explicitly.
  */
-export type LectureVideoType = 'screen' | 'camera' | 'audio';
+export type LectureVideoType = 'screen' | 'camera' | 'room' | 'audio';
 
 /**
  * The extensions the Lectures workspace treats as local lecture media.
@@ -97,10 +97,10 @@ export interface ParsedLectureVideo extends ParsedLectureIds {
 }
 
 const YANHEKT_ID_TAG = /\[yhid=(c(\d+)(?:s(\d+))?(?:l(\d+))?)\]/i;
-const VTYPE_TAG = /\[vtype=(screen|camera|audio)\]/i;
+const VTYPE_TAG = /\[vtype=(screen|camera|room|audio)\]/i;
 /** After `[vtype=…]`: records which Lectures compress preset was applied. */
 const ASCOMP_TAG = /\[ascomp=(tiny|small|readable)\]/i;
-const LEGACY_TYPE_PREFIX = /^(screen|camera|audio)_/i;
+const LEGACY_TYPE_PREFIX = /^(screen|camera|room|audio)_/i;
 
 function isCompressPreset(value: string): value is LectureCompressPresetTag {
   return value === 'tiny' || value === 'small' || value === 'readable';

@@ -116,7 +116,7 @@ async function serve(input: CommandInput, ctx: AppCommandContext): Promise<Comma
 
     for (const stream of streams) {
       const base = itemBase(target, lecture, stream);
-      if (!streamUrl(lecture, stream)) {
+      if (stream !== 'room' && !streamUrl(lecture, stream)) {
         const message = `this session has no ${stream} recording`;
         ctx.term.info(message);
         items.push({ ...base, status: 'failed', path: null, error: { code: 'no_recording', message } });

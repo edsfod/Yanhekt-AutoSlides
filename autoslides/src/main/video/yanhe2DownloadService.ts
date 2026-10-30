@@ -71,7 +71,7 @@ class Yanhe2HlsSigner implements HlsRequestSigner {
 }
 
 function isKind(value: unknown): value is Yanhe2DownloadKind {
-  return value === 'camera' || value === 'screen' || value === 'audio';
+  return value === 'camera' || value === 'screen' || value === 'room' || value === 'audio';
 }
 
 /** A bare file stem as `buildDownloadFileName` makes it: no folder, nothing hidden. */
@@ -100,6 +100,7 @@ export class Yanhe2DownloadService {
     const streams: Yanhe2DownloadKind[] = [];
     if (info.data.sources.some((source) => source.type === 'camera')) streams.push('camera');
     if (info.data.sources.some((source) => source.type === 'screen')) streams.push('screen');
+    if (info.data.sources.some((source) => source.type === 'room')) streams.push('room');
     if (info.data.audioUrl) streams.push('audio');
     if (streams.length === 0) return { kind: 'no_recording' };
 
@@ -146,7 +147,13 @@ export class Yanhe2DownloadService {
 
       const source = info.data.sources.find((candidate) => candidate.type === kind);
       if (!source || !isYanhe2PlayUrl(source.url)) {
-        throw new Error(kind === 'screen' ? 'This recording has no screen stream.' : 'This recording has no camera stream.');
+        const missingMessage =
+          kind === 'screen'
+            ? 'This recording has no screen stream.'
+            : kind === 'room'
+              ? 'This recording has no room camera stream.'
+              : 'This recording has no camera stream.';
+        throw new Error(missingMessage);
       }
       if (source.format === 'hls') {
         // The m3u8 service owns this id from here; a cancel reaches it through `cancel`.

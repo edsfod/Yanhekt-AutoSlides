@@ -47,7 +47,7 @@ export interface DownloadItem {
   // 'subtitles' is a Yanhe 2.0 transcript written as an `.srt`. It is not
   // fetched by this service at all: whoever adds it passes the function that
   // does the work (`addToQueue`'s second argument), and the queue only runs it.
-  videoType: 'camera' | 'screen' | 'audio' | 'subtitles'
+  videoType: 'camera' | 'screen' | 'room' | 'audio' | 'subtitles'
   // A Yanhe 2.0 recording: the stream comes from aita (main signs and fetches
   // it), while every other field is the same lecture's on Yanhekt, so the file,
   // dedupe and auto-extraction are exactly a Yanhekt download's.
@@ -301,7 +301,7 @@ class DownloadServiceClass {
       }
 
       // Get video stream URL from session data
-      const sessionData = await this.getSessionVideoUrl(item.sessionId, item.videoType)
+      const sessionData = await this.getSessionVideoUrl(item.sessionId, item.videoType, item.courseId)
       if (!sessionData) {
         throw new Error('Video stream URL not found')
       }
@@ -321,13 +321,16 @@ class DownloadServiceClass {
     }
   }
 
-  private async getSessionVideoUrl(sessionId: string, videoType: DownloadItem['videoType']): Promise<{ url: string } | null> {
+  private async getSessionVideoUrl(sessionId: string, videoType: DownloadItem['videoType'], courseId?: string): Promise<{ url: string } | null> {
     try {
       // Import DataStore dynamically to avoid circular dependencies
       const { DataStore } = await import('./dataStore')
       const sessionData = DataStore.getSessionData(sessionId)
 
       if (!sessionData) {
+        if (videoType === 'room') {
+          return { url: `yanhekt-room://${courseId ?? ''}/${sessionId}` }
+        }
         log.error('Session data not found for:', sessionId)
         return null
       }
@@ -346,7 +349,12 @@ class DownloadServiceClass {
 
       // Get the appropriate video URL based on type
       // For downloads, we need the original URLs from the session data
-      const videoUrl = videoType === 'camera' ? sessionData.main_url : sessionData.vga_url
+      const videoUrl =
+        videoType === 'camera'
+          ? sessionData.main_url
+          : videoType === 'room'
+            ? (sessionData.room_url || `yanhekt-room://${courseId ?? ''}/${sessionId}`)
+            : sessionData.vga_url
       if (!videoUrl) {
         log.error(`${videoType} URL not found in session data`)
         return null

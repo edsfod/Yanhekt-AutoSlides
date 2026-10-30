@@ -8,8 +8,8 @@
  */
 import type { Yanhe2SubtitleTarget } from './yanhe2Subtitles';
 
-/** What can be downloaded: the two recordings and the classroom mic. The room camera is not offered. */
-export type Yanhe2DownloadKind = 'camera' | 'screen' | 'audio';
+/** What can be downloaded: the three recordings (camera, screen, room) and the classroom mic. */
+export type Yanhe2DownloadKind = 'camera' | 'screen' | 'room' | 'audio';
 
 export interface Yanhe2DownloadQuery {
   /** aita course id. */

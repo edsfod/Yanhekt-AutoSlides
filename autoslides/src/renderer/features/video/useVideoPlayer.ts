@@ -265,7 +265,6 @@ export function useVideoPlayer(options: UseVideoPlayerOptions) {
     const streams = playbackData.value?.streams
     if (!streams || overrides.playbackDemo || options.canFallBack?.() === false) return false
     const offered = Object.values(streams)
-      .filter((stream) => configStore.developerMode || stream.type !== 'room')
       .map((stream) => stream.type)
     const next = pickPlayableStream(offered, failedStreams.keys())
     const key = next ? Object.keys(streams).find((k) => streams[k].type === next) : undefined

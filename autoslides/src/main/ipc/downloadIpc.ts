@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import type { IpcServices } from './types';
 import { createLogger } from '@main/infra/logger';
+import { isYanhektRoomMarker, startRoomDownloadWithFallback } from '@main/local/roomStreamFallback';
 const log = createLogger('DownloadIpc');
 
 export function registerDownloadIpcHandlers(services: IpcServices): void {
@@ -15,11 +16,22 @@ export function registerDownloadIpcHandlers(services: IpcServices): void {
 
     try {
       const effectiveLoginToken = loginToken || configService.getAuthToken();
-      if (!effectiveLoginToken) {
-        throw new Error('Authentication token not found. Please sign in again.');
-      }
+      if (isYanhektRoomMarker(m3u8Url)) {
+        await startRoomDownloadWithFallback(
+          services,
+          downloadId,
+          m3u8Url,
+          outputName,
+          progressCallback,
+          effectiveLoginToken || undefined,
+        );
+      } else {
+        if (!effectiveLoginToken) {
+          throw new Error('Authentication token not found. Please sign in again.');
+        }
 
-      await m3u8DownloadService.startDownload(downloadId, m3u8Url, outputName, progressCallback, effectiveLoginToken);
+        await m3u8DownloadService.startDownload(downloadId, m3u8Url, outputName, progressCallback, effectiveLoginToken);
+      }
       if (!event.sender.isDestroyed()) {
         event.sender.send('download:completed', downloadId);
       }

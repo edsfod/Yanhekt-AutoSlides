@@ -52,12 +52,12 @@ function service(info: unknown, found: unknown = twin) {
 const query = { courseId: '1', subId: '2' };
 
 describe('Yanhe2DownloadService.prepare', () => {
-  it('names the Yanhekt lecture and lists camera, screen and mic, never the room camera', async () => {
+  it('names the Yanhekt lecture and lists camera, screen, room and mic', async () => {
     const { created } = service({ kind: 'ok', data: subInfo() });
     expect(await created.prepare('1120000000', query)).toEqual({
       kind: 'ok',
       target: { courseId: '80101', courseTitle: '泛函分析', sessionId: '900101', sessionTitle: '第4周 星期一 第5大节' },
-      streams: ['camera', 'screen', 'audio'],
+      streams: ['camera', 'screen', 'room', 'audio'],
     });
   });
 
@@ -78,7 +78,7 @@ describe('Yanhe2DownloadService.start', () => {
   it('refuses a stream it does not offer or a file name that is a path', async () => {
     const { created } = service({ kind: 'ok', data: subInfo() });
     const progress = vi.fn();
-    await expect(created.start('a', '1120000000', query, 'room', 'room_x', progress)).rejects.toThrow('Bad Yanhe 2.0 download request');
+    await expect(created.start('a', '1120000000', query, 'subtitles', 'sub_x', progress)).rejects.toThrow('Bad Yanhe 2.0 download request');
     await expect(created.start('b', '1120000000', query, 'screen', '../screen_x', progress)).rejects.toThrow('Bad Yanhe 2.0 download request');
     await expect(created.start('c', '1120000000', query, 'screen', '.hidden', progress)).rejects.toThrow('Bad Yanhe 2.0 download request');
     expect(created.isActive('a')).toBe(false);

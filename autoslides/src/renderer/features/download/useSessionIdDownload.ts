@@ -65,7 +65,7 @@ export function useSessionIdDownload() {
         notify(t('sessions.noMicAudio'))
         return
       }
-      if (type !== 'audio' && !(type === 'camera' ? session.main_url : session.vga_url)) {
+      if (type !== 'audio' && type !== 'room' && !(type === 'camera' ? session.main_url : session.vga_url)) {
         notify(t('downloads.bySession.noStream'))
         return
       }
@@ -75,9 +75,11 @@ export function useSessionIdDownload() {
       if (!result.added) {
         notify(type === 'screen'
           ? t('sessions.alreadyInDownloadQueueScreen')
-          : type === 'audio'
-            ? t('sessions.alreadyInDownloadQueueAudio')
-            : t('sessions.alreadyInDownloadQueue'))
+          : type === 'room'
+            ? t('sessions.alreadyInDownloadQueueRoom')
+            : type === 'audio'
+              ? t('sessions.alreadyInDownloadQueueAudio')
+              : t('sessions.alreadyInDownloadQueue'))
         window.dispatchEvent(new CustomEvent('switchToDownload', { detail: result.existingItem.id }))
         return
       }

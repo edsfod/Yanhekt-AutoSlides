@@ -186,6 +186,7 @@ export interface RecordedSessionInput {
   duration?: string | number;
   main_url?: string;
   vga_url?: string;
+  room_url?: string;
   /** Unsigned SubAudio `.aac`; resolved by the renderer via api.getVideoAssets. */
   audio_url?: string;
 }

@@ -13,12 +13,14 @@ import { CliError, type CliErrorCode } from './errors';
 import { parseCourseTarget, parseSessionTarget } from './targets';
 import type { CommandInput } from './types';
 
-export type CliStream = 'screen' | 'camera';
+export type CliStream = 'screen' | 'camera' | 'room';
 
 const STREAM_CHOICES: Record<string, CliStream[]> = {
   screen: ['screen'],
   camera: ['camera'],
+  room: ['room'],
   both: ['screen', 'camera'],
+  all: ['screen', 'camera', 'room'],
 };
 
 export const STREAM_OPTION: OptionSpec = {
@@ -26,7 +28,7 @@ export const STREAM_OPTION: OptionSpec = {
   short: 's',
   value: 'which',
   choices: Object.keys(STREAM_CHOICES),
-  description: 'screen (default), camera, or both',
+  description: 'screen (default), camera, room, both, or all',
 };
 
 export const streamsOf = (input: CommandInput): CliStream[] =>
@@ -55,7 +57,7 @@ export interface Item {
 }
 
 export const ITEM_SHAPE =
-  '{ session_id, course_id, course_title, session_title, stream: "screen"|"camera"|null, status: ItemStatus, path: string|null, error?: { code, message } }';
+  '{ session_id, course_id, course_title, session_title, stream: "screen"|"camera"|"room"|null, status: ItemStatus, path: string|null, error?: { code, message } }';
 
 export interface PlanDeps {
   apiClient: ApiClient;
@@ -103,7 +105,7 @@ export async function collectTargets(
   const skipped: Item[] = [];
   for (const session of sessions) {
     const sessionId = String(session.session_id);
-    if (session.main_url || session.vga_url) {
+    if (session.main_url || session.vga_url || session.room_url) {
       targets.push({ sessionId, lecture: { course, session } });
     } else {
       // Not recorded yet (a future class) — expected in a course list, so not a failure.
@@ -154,7 +156,11 @@ export function itemBase(target: Target, lecture: Lecture, stream: CliStream) {
 }
 
 export const streamUrl = (lecture: Lecture, stream: CliStream): string =>
-  (stream === 'camera' ? lecture.session.main_url : lecture.session.vga_url) ?? '';
+  (stream === 'camera'
+    ? lecture.session.main_url
+    : stream === 'room'
+      ? lecture.session.room_url
+      : lecture.session.vga_url) ?? '';
 
 /** File name (no extension) and path the app gives this stream, so the Lectures library finds it. */
 export function plannedFile(outputDir: string, lecture: Lecture, stream: CliStream): { fileName: string; filePath: string } {

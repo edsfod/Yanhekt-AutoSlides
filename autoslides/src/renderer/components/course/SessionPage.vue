@@ -128,6 +128,18 @@
                 <line x1="12" y1="17" x2="12" y2="21"/>
               </svg>
             </button>
+            <button @click="downloadAllRoom" class="btn batch-btn download-room-btn">
+              <svg class="batch-lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span class="batch-label">{{ $t('sessions.downloadAllRoom') }}</span>
+              <svg class="batch-trail" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M23 7l-7 5 7 5V7z"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </button>
             <button @click="downloadAllAudio" class="btn batch-btn download-audio-btn">
               <svg class="batch-lead" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -208,6 +220,18 @@
                     <line x1="12" y1="17" x2="12" y2="21"/>
                   </svg>
                 </button>
+                <!-- [⤓ 🎥] : download the classroom camera (room) stream -->
+                <button @click.stop="downloadRoom(session)" class="action-btn action-pair room-btn" :title="$t('sessions.downloadRoom')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7,10 12,15 17,10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M23 7l-7 5 7 5V7z"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                  </svg>
+                </button>
                 <!-- [⤓ 🎙] : download the classroom mic audio (resolved on click) -->
                 <button @click.stop="downloadAudio(session)" class="action-btn action-pair audio-btn" :title="$t('sessions.downloadAudio')">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -271,10 +295,12 @@ const {
   addToQueue,
   downloadCamera,
   downloadScreen,
+  downloadRoom,
   downloadAudio,
   addAllToQueue,
   downloadAllCamera,
   downloadAllScreen,
+  downloadAllRoom,
   downloadAllAudio,
   formatDuration,
   getDayName,
