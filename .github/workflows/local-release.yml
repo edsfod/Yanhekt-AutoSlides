@@ -41,6 +41,14 @@ jobs:
       continue-on-error: true
       run: npm test
 
+    - name: Bundle plaintext course index
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        New-Item -ItemType Directory -Force -Path autoslides/vendor/course-index | Out-Null
+        gh release download index --repo "${{ github.repository }}" --pattern legacy-session-index.json.gz --dir autoslides/vendor/course-index --clobber
+
     - name: Build NSIS installer
       # Retried like upstream's build.yml: packaging re-fetches Electron's
       # SHASUMS256.txt and a transient GitHub 500 aborts the build.

@@ -38,6 +38,7 @@ import { passphraseId, unsealAsync } from './seal';
 import signingKeys from './indexSigningKeys.json';
 import { numberKey } from './grams';
 import { searchCourses, type IndexCourse } from './localSearch';
+import { openPlaintextCourseIndex } from '@main/local/plaintextCourseIndex'; // Fork patch (PATCHES.md #4)
 
 const log = createLogger('CourseIndex');
 
@@ -65,6 +66,7 @@ interface Opened {
   manifest: ClientManifest;
   /** Terms whose files are present, by term key. */
   present: Map<string, ClientTerm>;
+  plaintextTerms?: Map<string, TermCourse[]>; // Fork patch (PATCHES.md #4)
 }
 
 export interface CourseIndexOptions {
@@ -126,6 +128,9 @@ export class CourseIndexBundle {
   }
 
   private async openOnce(): Promise<Opened | { problem: CourseIndexProblem; detail?: string }> {
+    // Fork patch (PATCHES.md #4): support reading plaintext legacy-session-index.json(.gz) without passphrase
+    const plain = await openPlaintextCourseIndex(this.dir);
+    if (plain) return { manifest: plain.manifest, present: plain.present, plaintextTerms: plain.terms };
     if (!this.passphrase) return { problem: 'no-key' };
     let text: string;
     try {
@@ -158,7 +163,9 @@ export class CourseIndexBundle {
 
   private async readTerm(term: string): Promise<TermCourse[] | null> {
     const opened = await this.open();
-    if ('problem' in opened || !this.passphrase) return null;
+    if ('problem' in opened) return null;
+    if (opened.plaintextTerms) return opened.plaintextTerms.get(term) ?? null; // Fork patch (PATCHES.md #4)
+    if (!this.passphrase) return null;
     const entry = opened.present.get(term);
     if (!entry) return null;
     try {

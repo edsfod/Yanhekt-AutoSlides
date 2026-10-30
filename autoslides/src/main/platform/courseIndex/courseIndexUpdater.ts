@@ -26,6 +26,7 @@ import { CLIENT_MANIFEST_ASSET, openEnvelope, parseClientManifest, sha256Hex, ty
 import type { LocalCourseIndex } from './courseIndex';
 import { passphraseId, unsealAsync } from './seal';
 import signingKeys from './indexSigningKeys.json';
+import { updatePlaintextCourseIndex } from '@main/local/plaintextCourseIndex'; // Fork patch (PATCHES.md #4)
 
 const log = createLogger('CourseIndexUpdate');
 
@@ -164,7 +165,7 @@ export class CourseIndexUpdater {
   private async update(): Promise<CourseIndexUpdateResult> {
     const { index } = this.options;
     const passphrase = index.passphrase;
-    if (!passphrase) return { ok: false, error: 'this build has no index key' };
+    if (!passphrase) return updatePlaintextCourseIndex(index, this.options.fetcher, this.options.currentTerm); // Fork patch (PATCHES.md #4)
     const fetcher = this.options.fetcher;
 
     const text = (await fetchReleaseAsset(CLIENT_MANIFEST_ASSET, fetcher)).toString('utf8');

@@ -17,7 +17,7 @@ export function registerApiIpcHandlers(services: IpcServices): void {
       courseIndex.generatedAt(),
       courseIndexUpdater.getState(),
     ]);
-    return { hasKey: courseIndex.passphrase !== null, terms, generatedAt, ...update };
+    return { hasKey: true, terms, generatedAt, ...update }; // Fork patch (PATCHES.md #4)
   };
   ipcMain.handle('courseIndex:getStatus', indexStatus);
   ipcMain.handle('courseIndex:update', async () => {
